@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Gaming Clip Uploader</title>
+  <style>
+    body { font-family: Arial; margin: 40px; }
+    input { margin: 10px 0; width: 100%; padding: 10px; }
+    button { padding: 10px 20px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <h2>🎮 Upload Your Gaming Clip</h2>
+  <form id="uploadForm">
+    <input type="text" name="clipname" placeholder="Clip Name" required />
+    <input type="text" name="author" placeholder="Your Name" required />
+    <input type="file" id="file" accept="video/*" required />
+    <button type="submit">Upload Clip</button>
+  </form>
+  <p id="status"></p>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const status = document.getElementById('status');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const clipname = form.clipname.value;
+      const author = form.author.value;
+      const fileInput = document.getElementById('file');
+      const file = fileInput.files[0];
+
+      const reader = new FileReader();
+      reader.onload = async function () {
+        const boundary = '----WebKitFormBoundary' + Math.random().toString(36).substring(2);
+
+        const body = `--${boundary}\r\n`
+          + `Content-Disposition: form-data; name="clipname"\r\n\r\n${clipname}\r\n`
+          + `--${boundary}\r\n`
+          + `Content-Disposition: form-data; name="author"\r\n\r\n${author}\r\n`
+          + `--${boundary}\r\n`
+          + `Content-Disposition: form-data; name="file"; filename="${file.name}"\r\n`
+          + `Content-Type: ${file.type}\r\n\r\n`
+          + reader.result.split(',')[1] + `\r\n`
+          + `--${boundary}--`;
+
+        const response = await fetch('https://script.google.com/macros/s/AKfycbzQ1VPwBtYCygN2gPLcw5LsoQMEnRqsfQEkSaxcHz_z78-w611R6l14Z_6KGVpdw2QrPw/exec', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'multipart/form-data; boundary=' + boundary,
+          },
+          body: body
+        });
+
+        const text = await response.text();
+        status.textContent = text;
+      };
+
+      reader.readAsDataURL(file);
+    });
+  </script>
+</body>
+</html>
