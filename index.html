@@ -41,25 +41,22 @@
 
       reader.onload = async function () {
         try {
-          const boundary = '----WebKitFormBoundary' + Math.random().toString(36).substring(2);
+          const base64Data = reader.result.split(',')[1];
 
-          const body =
-            `--${boundary}\r\n` +
-            `Content-Disposition: form-data; name="clipname"\r\n\r\n${clipname}\r\n` +
-            `--${boundary}\r\n` +
-            `Content-Disposition: form-data; name="author"\r\n\r\n${author}\r\n` +
-            `--${boundary}\r\n` +
-            `Content-Disposition: form-data; name="file"; filename="${file.name}"\r\n` +
-            `Content-Type: ${file.type}\r\n\r\n` +
-            reader.result.split(',')[1] + `\r\n` +
-            `--${boundary}--`;
+          const payload = {
+            clipname,
+            author,
+            filename: file.name,
+            filetype: file.type,
+            filedata: base64Data,
+          };
 
           const response = await fetch('https://script.google.com/macros/s/AKfycbzQ1VPwBtYCygN2gPLcw5LsoQMEnRqsfQEkSaxcHz_z78-w611R6l14Z_6KGVpdw2QrPw/exec', {
             method: 'POST',
             headers: {
-              'Content-Type': 'multipart/form-data; boundary=' + boundary,
+              'Content-Type': 'application/json',
             },
-            body: body,
+            body: JSON.stringify(payload),
           });
 
           if (response.ok) {
